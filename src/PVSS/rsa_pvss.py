@@ -43,7 +43,8 @@ def _extended_gcd(a, b):
     return last_x, last_y
 
 def _divmod(num, den, p):
-    '''compute num / den modulo prime p
+    '''
+    compute num / den modulo prime p
 
     To explain what this means, the return value will be such that
     the following is true: den * _divmod(num, den, p) % p == num
@@ -52,11 +53,12 @@ def _divmod(num, den, p):
     return num * inv
 
 def _eval_at(poly, x, prime):
-    '''evaluates polynomial (coefficient tuple) at x, used to generate a
+    '''
+    evaluates polynomial (coefficient tuple) at x, used to generate a
     shamir pool in make_random_shares below.
     '''
     accum = 0
-    # calculate f(x)=(a0*x^0 + a1*x^1 + a2*x^2) mod p
+    ## calculate f(x)=(a0*x^0 + a1*x^1 + a2*x^2) mod p
     for coeff in reversed(poly):
         accum *= x
         accum += coeff
@@ -64,12 +66,13 @@ def _eval_at(poly, x, prime):
     return accum
 
 def _eval_commit_at(poly_commits, x, prime):
-    '''evaluates polynomial commitmemt (coefficient tuple) at x, 
-    	used to verify a commitment proof
+    '''
+    evaluates polynomial commitmemt (coefficient tuple) at x, 
+    used to verify a commitment proof
     '''
     accum = 1
     i = 0
-    # calculate Sj(x)=II (Ajk ^ x^k) mod p
+    ## calculate Sj(x)=II (Ajk ^ x^k) mod p
     for coeff in poly_commits:
         #accum ^= x
         exp = pow(x, i, prime)
@@ -90,6 +93,7 @@ def _lagrange_interpolate(x, x_s, y_s, p):
         for v in vals:
             accum *= v
         return accum
+
     nums = []  # avoid inexact division
     dens = []
     for i in range(k):
@@ -100,6 +104,7 @@ def _lagrange_interpolate(x, x_s, y_s, p):
     den = PI(dens)
     num = sum([_divmod(nums[i] * den * y_s[i] % p, dens[i], p)
                for i in range(k)])
+    
     return (_divmod(num, den, p) + p) % p
 
 '''
@@ -130,17 +135,17 @@ class PVSS(object):
 		if minimum_t > shares_n:
 		    raise ValueError("pool secret would be irrecoverable")
 
-		# set poly[0]=s
+		## set poly[0]=s
 		poly = [secret_s]
 
-		# random choose poly no great than poly_max
+		## random choose poly no great than poly_max
 		poly += [_RINT(poly_max) for i in range(minimum_t-1)]
 
-		# calculate poly points for each i as format (i, s(i))
+		## calculate poly points for each i as format (i, s(i))
 		points = [(i, _eval_at(poly, i, prime))
 		          for i in range(1, shares_n + 1)]
 
-		# return s0=poly[0] and point f(i) where i>=1 and i<shares_n
+		## return s0=poly[0] and point f(i) where i>=1 and i<shares_n
 		return poly, points
 
 	@staticmethod
@@ -153,7 +158,7 @@ class PVSS(object):
 	        raise ValueError("need at least two shares")
 	    x_s, y_s = zip(*shares)
 	    
-	    #perform lagrange interpolat to recover s(0) 
+	    ## perform lagrange interpolat to recover s(0) 
 	    return _lagrange_interpolate(0, x_s, y_s, prime)
 
 	@staticmethod
@@ -161,8 +166,8 @@ class PVSS(object):
 		'''
 		Generate the poly commitment: (i, g^poly(i) mod prime)
 		'''		
-		#If the message representative g is not between 0 and n - 1,
-		#output "message representative out of range" and stop.
+		##If the message representative g is not between 0 and n - 1,
+		## output "message representative out of range" and stop.
 		if not (0 <= g <= prime-1):
 			raise Exception("g not within 0 and prime - 1")
 		# Let poly_com = g^a mod n 
@@ -176,17 +181,17 @@ class PVSS(object):
 		'''
 		Generate the consistency share proof: (i, g^s(i) mod prime)
 		'''
-		#If the message representative g is not between 0 and n - 1,
-		#output "message representative out of range" and stop.
+		## If the message representative g is not between 0 and n - 1,
+		## output "message representative out of range" and stop.
 		if not (0 <= g <= prime-1):
 			raise Exception("g not within 0 and prime - 1")
 
-		# Let poly_com = g^a mod n 
-		# calculate consistency proof
+		## Let poly_com = g^a mod n 
+		## calculate consistency proof
 		share_proofs = [(share[0], pow(g, share[1], prime)) 
 						for share in shares]
 
-		# output commitment.
+		## output commitment.
 		return share_proofs
 
 	@staticmethod
@@ -194,7 +199,7 @@ class PVSS(object):
 		'''
 		verify consistency share proof given poly_commits
 		'''
-		# calculate S(x) by uisng 
+		## Use poly_commits to calculate S(x) 
 		verify_points = [(i, _eval_commit_at(poly_commits, i, prime))
 		          for i in range(1, len(share_proofs) + 1)]
 		return verify_points

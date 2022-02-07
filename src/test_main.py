@@ -19,6 +19,7 @@ import functools
 from cryptolib.crypto_rsa import Crypto_RSA
 from PVSS.rsa_pvss import PVSS, _RINT 
 from VRF.rsa_vrf import RSA_PublicKey, RSA_PrivateKey, RSA_FDH_VRF
+from VDF.efficient_vdf import E_VDF
 
 logger = logging.getLogger(__name__)
 
@@ -287,6 +288,14 @@ def vrf_test(args):
 	isValid = RSA_FDH_VRF.verifying(rsa_publickey, alpha, pi, k)
 	logger.info('Verify proof: {}'.format(isValid))
 
+def vdf_test(args):
+	eVDF=E_VDF(512, 128)
+	mpz_prime = E_VDF.generate_prime(eVDF.r_state, int(eVDF._lambda/2))
+	print(mpz_prime)
+
+	hash_mpz_prime = eVDF.hash_prime(mpz_prime)
+	print(hash_mpz_prime)
+
 def define_and_get_arguments(args=sys.argv[1:]):
 	parser = argparse.ArgumentParser(description="Run test.")
 
@@ -294,7 +303,8 @@ def define_and_get_arguments(args=sys.argv[1:]):
 						help="Execute test function: 0-rsa_test(), \
 													1-pvss_test() \
 													2-VSS_demo() \
-													3-vrf_test()")
+													3-vrf_test() \
+													4-vdf_test()")
 
 	parser.add_argument("--op_status", type=int, default=0, help="test case type.")
 
@@ -323,5 +333,7 @@ if __name__ == '__main__':
 		VSS_demo(args)
 	elif(args.test_func==3):
 		vrf_test(args)
+	elif(args.test_func==4):
+		vdf_test(args)
 	else:
 		rsa_test(args)
