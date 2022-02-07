@@ -1,0 +1,2 @@
+## ========================================== depedencise for gmpy2 ====================================
+sudo apt-get install libmpfr-dev libgmp3-dev  libmpc-dev
