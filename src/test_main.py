@@ -289,12 +289,42 @@ def vrf_test(args):
 	logger.info('Verify proof: {}'.format(isValid))
 
 def vdf_test(args):
-	eVDF=E_VDF(512, 128)
-	mpz_prime = E_VDF.generate_prime(eVDF.r_state, int(eVDF._lambda/2))
-	print(mpz_prime)
+	## initialize E_VDF instance eVDF
+	eVDF=E_VDF()
 
-	hash_mpz_prime = eVDF.hash_prime(mpz_prime)
-	print(hash_mpz_prime)
+	ls_time = []
+	int_lambda =  2048
+	int_k = 128
+	int_tau = 20
+
+	## 1) set_up process
+	start_time=time.time()	
+	mpz_N = eVDF.set_up(int_lambda, int_k)
+	exec_time=time.time()-start_time
+	ls_time.append(exec_time)
+	logger.info('eVDF set_up: lambda: {} \t k: {} \t N: {}\n'.format(eVDF._lambda, eVDF._k, mpz_N))
+
+	## 2) evaluate and proof process
+	if(args.message==''):
+		x = "This text for vdf test."
+	else:
+		x = args.message
+
+	logger.info('Test message: {}'.format(x))
+	start_time=time.time()	
+	proof_pair = eVDF.evaluate_proof(x, int_tau, mpz_N)
+	exec_time=time.time()-start_time
+	ls_time.append(exec_time)
+	logger.info('eVDF evaluate_proof: pi: {} \t l: {}\n'.format(proof_pair[0], proof_pair[1]))
+
+	## 2) verify proof process
+	start_time=time.time()
+	proof_verify = eVDF.verify_proof(x, int_tau, mpz_N, proof_pair)
+	exec_time=time.time()-start_time
+	ls_time.append(exec_time)
+	logger.info('eVDF verify_proof: {}\n'.format(proof_verify))
+
+	logger.info('Exec time: {}\n'.format(ls_time))
 
 def define_and_get_arguments(args=sys.argv[1:]):
 	parser = argparse.ArgumentParser(description="Run test.")
