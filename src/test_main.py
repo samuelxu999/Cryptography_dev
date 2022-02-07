@@ -293,9 +293,9 @@ def vdf_test(args):
 	eVDF=E_VDF()
 
 	ls_time = []
-	int_lambda =  2048
-	int_k = 128
-	int_tau = 20
+	int_lambda =  args.lam
+	int_k = args.k
+	int_tau_exp = 2**args.tau
 
 	## 1) set_up process
 	start_time=time.time()	
@@ -312,17 +312,17 @@ def vdf_test(args):
 
 	logger.info('Test message: {}'.format(x))
 	start_time=time.time()	
-	proof_pair = eVDF.evaluate_proof(x, int_tau, mpz_N)
+	proof_pair = eVDF.evaluate_proof(x, int_tau_exp, mpz_N)
 	exec_time=time.time()-start_time
 	ls_time.append(exec_time)
-	logger.info('eVDF evaluate_proof: pi: {} \t l: {}\n'.format(proof_pair[0], proof_pair[1]))
+	logger.info('eVDF evaluate_proof: tau_exp-2^{}\t pi: {} \t l: {}\n'.format(args.tau, proof_pair[0], proof_pair[1]))
 
 	## 2) verify proof process
 	start_time=time.time()
-	proof_verify = eVDF.verify_proof(x, int_tau, mpz_N, proof_pair)
+	proof_verify = eVDF.verify_proof(x, int_tau_exp, mpz_N, proof_pair)
 	exec_time=time.time()-start_time
 	ls_time.append(exec_time)
-	logger.info('eVDF verify_proof: {}\n'.format(proof_verify))
+	logger.info('eVDF verify_proof: tau_exp-2^{}\t result: {}\n'.format(args.tau, proof_verify))
 
 	logger.info('Exec time: {}\n'.format(ls_time))
 
@@ -344,6 +344,12 @@ def define_and_get_arguments(args=sys.argv[1:]):
 	parser.add_argument("--vss_t", type=int, default=3, help="t value in VSS.")
 
 	parser.add_argument("--vss_n", type=int, default=6, help="n value in VSS.")
+
+	parser.add_argument("--lam", type=int, default=256, help="lambda in VDF.")
+
+	parser.add_argument("--k", type=int, default=128, help="k in VDF.")
+
+	parser.add_argument("--tau", type=int, default=20, help="t in in VDF.")
 
 	args = parser.parse_args(args=args)
 	return args

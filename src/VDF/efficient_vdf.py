@@ -112,7 +112,7 @@ class E_VDF(object):
 		self.q = E_VDF.generate_prime(self.r_state, int(self._lambda/2))
 
 		mpz_N = gmpy2.mul(self.p, self.q)
-		# phi_N = gmpy2.mul(self.p-1, self.q-1)
+		self.phi_N = gmpy2.mul(self.p-1, self.q-1)
 
 		return mpz_N
 
@@ -173,16 +173,10 @@ class E_VDF(object):
 		r = gmpy2.powmod(2, _tau, l)
 
 		## 3) proof pair to calculate y 
-		## a) original method: y = pi^l * x^r mod N
-		# pi_l = pow(pi, l)
-		# x_r = pow(x, r)
-		# mpz_mul = gmpy2.mul(pi_l,x_r)
-		# y = gmpy2.f_mod(mpz_mul, _N)
-
-		## b) optimized method: y=(pi^l mod N) * (x^r mod N)
+		## optimized method: y=((pi^l mod N) * (x^r mod N)) mod N
 		pi_l_mod = gmpy2.powmod(pi, l, _N)
 		pi_x_r = gmpy2.powmod(x, r, _N)
-		y = gmpy2.mul(pi_l_mod, pi_x_r)
+		y = gmpy2.mul(pi_l_mod, pi_x_r) % _N
 
 		## 4) calculate l_verify = H_prime(x+y)
 		l_verify = self.hash_prime(gmpy2.add(x,y))
