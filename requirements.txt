@@ -1,2 +1,2 @@
-cryptography==2.6.1
+cryptography==3.3.2
 gmpy2==2.1.2
