@@ -1,6 +1,6 @@
 '''
 ========================
-efficient_vrf module
+efficient_vdf module
 ========================
 Created on Feb.6, 2022
 @author: Xu Ronghua
@@ -17,7 +17,7 @@ import gmpy2
 from gmpy2 import mpz
 
 '''
-===================== Internal functions ========================
+======================== Internal functions ========================
 '''
 ## integer to hex
 def int_to_hex(int_data):
@@ -68,10 +68,13 @@ class E_VDF(object):
 		    mpz_prime: 	an uniformly distributed random integer between 0 and 2**bitLen - 1
 
 		'''
+		## generate a random number
 		mpz_random = gmpy2.mpz_urandomb(r_state, bitLen)	
 
+		## get prime bumber that close to mpz_random
 		mpz_prime = gmpy2.next_prime(mpz_random)
-		
+	
+		## return prime number.
 		return mpz_prime
 
 	def hash_prime(self, mpz_prime):
@@ -112,7 +115,7 @@ class E_VDF(object):
 		self.q = E_VDF.generate_prime(self.r_state, int(self._lambda/2))
 
 		mpz_N = gmpy2.mul(self.p, self.q)
-		self.phi_N = gmpy2.mul(self.p-1, self.q-1)
+		# self.phi_N = gmpy2.mul(self.p-1, self.q-1)
 
 		return mpz_N
 
@@ -121,7 +124,7 @@ class E_VDF(object):
 		VDF evaluation to solve challenge and calculate proof pairs for verification
 		@Input
 			_message:		data (x) that is used to feed evaluatation
-			_tau:			challenge (task difficuly) that requires y=x^2**t mod N
+			_tau:			challenge (task difficuly) that requires y=x^(2**tau) mod N
 			_N:				modulus N
 		@Output
 			proof_pair:		Return [pi, l]	
@@ -131,23 +134,23 @@ class E_VDF(object):
 		hash_m = hash_message(_message, self._k)
 		x = hex_to_int(hash_m)
 
-		## 2) calculate 2^t
+		## 2) calculate 2^tau
 		exp_tau = pow(2, _tau)
 
-		## 3) calculate y=x^2**t mod N
+		## 3) calculate y=x^(2**t) mod N
 		y = gmpy2.powmod(x, exp_tau, _N)
 
 		## ---------------------------- proof -----------------------------
 		## 1) calculate  l= H_prime(x+y)		
 		l = self.hash_prime(gmpy2.add(x,y))
 
-		## 2) calculate floor(2^t/l)
+		## 2) calculate floor(2^tau/l)
 		exp_tau_div = gmpy2.f_div(exp_tau,l)
-		# print(exp_tau_div)
 
-		## 3) calculate y=x^exp_tau_div mod N
+		## 3) calculate pi=x^exp_tau_div mod N
 		pi = gmpy2.powmod(x, exp_tau_div, _N)
 
+		## return proof pair
 		proof_pair=[pi,l]
 		return proof_pair
 
@@ -169,10 +172,10 @@ class E_VDF(object):
 		hash_m = hash_message(_message, self._k)
 		x = hex_to_int(hash_m)
 
-		## 2) calculate 2^t mod l
+		## 2) calculate 2^tau mod l
 		r = gmpy2.powmod(2, _tau, l)
 
-		## 3) proof pair to calculate y 
+		## 3) use proof pair to calculate y 
 		## optimized method: y=((pi^l mod N) * (x^r mod N)) mod N
 		pi_l_mod = gmpy2.powmod(pi, l, _N)
 		pi_x_r = gmpy2.powmod(x, r, _N)
@@ -181,14 +184,5 @@ class E_VDF(object):
 		## 4) calculate l_verify = H_prime(x+y)
 		l_verify = self.hash_prime(gmpy2.add(x,y))
 
+		## 5) return verify result
 		return l==l_verify
-
-
-
-
-
-
-
-
-
-

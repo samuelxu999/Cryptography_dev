@@ -8,5 +8,7 @@ The overview of organization of projects are:
 | src/cryptolib | This lib folder provides cryprography basis, like RSA, etc.. |
 | src/PVSS | Public Verifiable Secret Share implementation. |
 | src/VRF | Verifiable Random Function implementation |
+| src/VDF | Verifiable Delay Function implementation |
 | test_main.py| CLI tool to execute test and demo cases. |
-| requirements.txt| Provides required packages and depedencies. |
+| requirements.txt| Provides required pip packages. |
+| env_setup.txt| Provides required depedencies. |
