@@ -16,6 +16,7 @@ import logging
 import argparse
 import functools
 
+from cryptolib.crypto_sym import Crypto_SYM
 from cryptolib.crypto_rsa import Crypto_RSA
 from PVSS.rsa_pvss import PVSS, _RINT 
 from VRF.rsa_vrf import RSA_PublicKey, RSA_PrivateKey, RSA_FDH_VRF
@@ -326,6 +327,24 @@ def vdf_test(args):
 
 	logger.info('Exec time: {}\n'.format(ls_time))
 
+def sym_test(args):
+	salt_file = 'sym_salt'
+	## 1) generate salt
+	Crypto_SYM.generate_salt(salt_file)
+	logger.info('Generate salt and saved to {}.\n'.format(salt_file))
+
+	## 2) reload salt
+	random_salt = Crypto_SYM.reload_salt(salt_file)
+	logger.info('Reload salt from {}.\n'.format(salt_file))
+
+	## 3) encrypt message
+	toekn = Crypto_SYM.encrypt(random_salt, 'samuelxu999', args.message)
+	logger.info('Encryped data: {} to token: {}.\n'.format(args.message, toekn))
+
+	## 4) decrypt message
+	msg = Crypto_SYM.decrypt(random_salt, 'samuelxu999', toekn)
+	logger.info('Decryped token: {} to original data: {}.\n'.format(toekn, msg))
+
 def define_and_get_arguments(args=sys.argv[1:]):
 	parser = argparse.ArgumentParser(description="Run test.")
 
@@ -334,7 +353,8 @@ def define_and_get_arguments(args=sys.argv[1:]):
 													1-pvss_test() \
 													2-VSS_demo() \
 													3-vrf_test() \
-													4-vdf_test()")
+													4-vdf_test() \
+													5-sym_test()")
 
 	parser.add_argument("--op_status", type=int, default=0, help="test case type.")
 
@@ -371,5 +391,7 @@ if __name__ == '__main__':
 		vrf_test(args)
 	elif(args.test_func==4):
 		vdf_test(args)
+	elif(args.test_func==5):
+		sym_test(args)
 	else:
 		rsa_test(args)
